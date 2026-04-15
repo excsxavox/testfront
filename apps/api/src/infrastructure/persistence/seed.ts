@@ -1,38 +1,45 @@
 import { scryptSync } from "node:crypto";
-import { sql } from "drizzle-orm";
-import { createDbClient } from "./db.js";
-import {
-  hotelSettings,
-  reservations,
-  roomTypes,
-  rooms,
-  users,
-} from "./schema/index.js";
+import { eq } from "drizzle-orm";
+import { createDbClient, resolveActiveSqliteFilePath, type DbClient } from "./db.js";
+import { hotelSettings, reservations, rooms, roomTypes, users } from "./schema/index.js";
 
-const NOW_ISO = new Date().toISOString();
-
-/** Contraseña de ejemplo para recepción tras `npm run db:seed` (solo entornos de prueba). */
+/** Usuario de recepción insertado por el seed del piloto (login futuro). */
 export const SEED_RECEPTION_USERNAME = "reception";
+
+/**
+ * Contraseña en claro **solo** para entornos de demo local (documentada en README).
+ * No usar en producción; el CLI del seed rechaza `NODE_ENV=production`.
+ */
 export const SEED_RECEPTION_PASSWORD = "piloto2026";
 
 function hashPasswordScrypt(password: string): string {
-  const salt = Buffer.from("piloto-seed-v1-salt", "utf8"); // fijo: solo datos de demo
+  const salt = Buffer.from("piloto-seed-v1-salt", "utf8");
   const key = scryptSync(password, salt, 64);
   return `scrypt$${salt.toString("hex")}$${key.toString("hex")}`;
 }
 
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+export type SeedPilotoDemoResult = {
+  /** Ruta del fichero SQLite activo al ejecutar el seed. */
+  databasePath: string;
+  roomTypeIds: { single: number; double: number; suite: number };
+  roomIds: { ind101: number; ind102: number; dbl201: number; dbl202: number; ste301: number };
+  receptionUserId: number;
+  reservationIds: { pending: number; confirmedA: number; confirmedB: number; cancelled: number };
+};
+
 /**
- * Puebla `room_types`, `rooms`, `users`, `hotel_settings` y `reservations` de ejemplo.
- * Borra filas existentes en esas tablas (orden respetando FK). No ejecutar en producción.
+ * Reinicia datos mínimos del piloto en una transacción: borra filas en orden seguro por FK
+ * y vuelve a insertar tipos, habitaciones, usuario recepción, ajustes TZ y reservas de ejemplo.
  */
-export async function seedPilotoDemoData(): Promise<void> {
-  if (process.env["NODE_ENV"] === "production") {
-    throw new Error("Refusing to run piloto DB seed when NODE_ENV=production");
-  }
+export function seedPilotoDemoData(client: DbClient = createDbClient()): SeedPilotoDemoResult {
+  const ts = nowIso();
+  const databasePath = resolveActiveSqliteFilePath();
 
-  const db = createDbClient();
-
-  db.transaction((tx) => {
+  const inner = client.transaction((tx) => {
     tx.delete(reservations).run();
     tx.delete(rooms).run();
     tx.delete(roomTypes).run();
@@ -47,64 +54,67 @@ export async function seedPilotoDemoData(): Promise<void> {
           code: "single",
           displayName: "Individual",
           orientedPriceCents: 7500,
-          createdAt: NOW_ISO,
+          createdAt: ts,
         },
         {
           code: "double",
           displayName: "Doble",
           orientedPriceCents: 11000,
-          createdAt: NOW_ISO,
+          createdAt: ts,
         },
         {
           code: "suite",
           displayName: "Suite",
           orientedPriceCents: 18500,
-          createdAt: NOW_ISO,
+          createdAt: ts,
         },
       ])
       .run();
 
-    const typeRows = tx.select().from(roomTypes).all();
-    const byCode = (code: string) => {
-      const row = typeRows.find((r) => r.code === code);
-      if (!row) throw new Error(`Missing seeded room type: ${code}`);
-      return row.id;
-    };
-
-    const singleId = byCode("single");
-    const doubleId = byCode("double");
-    const suiteId = byCode("suite");
+    const singleRow = tx.select().from(roomTypes).where(eq(roomTypes.code, "single")).get();
+    const doubleRow = tx.select().from(roomTypes).where(eq(roomTypes.code, "double")).get();
+    const suiteRow = tx.select().from(roomTypes).where(eq(roomTypes.code, "suite")).get();
+    if (!singleRow || !doubleRow || !suiteRow) {
+      throw new Error("seed: missing room_types after insert");
+    }
 
     tx.insert(rooms)
       .values([
-        { roomTypeId: singleId, unitCode: "IND-101", createdAt: NOW_ISO },
-        { roomTypeId: singleId, unitCode: "IND-102", createdAt: NOW_ISO },
-        { roomTypeId: doubleId, unitCode: "DBL-201", createdAt: NOW_ISO },
-        { roomTypeId: doubleId, unitCode: "DBL-202", createdAt: NOW_ISO },
-        { roomTypeId: suiteId, unitCode: "STE-301", createdAt: NOW_ISO },
+        { roomTypeId: singleRow.id, unitCode: "IND-101", createdAt: ts },
+        { roomTypeId: singleRow.id, unitCode: "IND-102", createdAt: ts },
+        { roomTypeId: doubleRow.id, unitCode: "DBL-201", createdAt: ts },
+        { roomTypeId: doubleRow.id, unitCode: "DBL-202", createdAt: ts },
+        { roomTypeId: suiteRow.id, unitCode: "STE-301", createdAt: ts },
       ])
       .run();
+
+    const ind101 = tx.select().from(rooms).where(eq(rooms.unitCode, "IND-101")).get();
+    const ind102 = tx.select().from(rooms).where(eq(rooms.unitCode, "IND-102")).get();
+    const dbl201 = tx.select().from(rooms).where(eq(rooms.unitCode, "DBL-201")).get();
+    const dbl202 = tx.select().from(rooms).where(eq(rooms.unitCode, "DBL-202")).get();
+    const ste301 = tx.select().from(rooms).where(eq(rooms.unitCode, "STE-301")).get();
+    if (!ind101 || !ind102 || !dbl201 || !dbl202 || !ste301) {
+      throw new Error("seed: missing rooms after insert");
+    }
 
     tx.insert(users)
       .values({
         username: SEED_RECEPTION_USERNAME,
         passwordHash: hashPasswordScrypt(SEED_RECEPTION_PASSWORD),
         role: "reception",
-        createdAt: NOW_ISO,
+        createdAt: ts,
       })
       .run();
 
-    const roomRows = tx.select().from(rooms).all();
-    const roomByCode = (unit: string) => {
-      const row = roomRows.find((r) => r.unitCode === unit);
-      if (!row) throw new Error(`Missing seeded room: ${unit}`);
-      return row.id;
-    };
+    const receptionUser = tx.select().from(users).where(eq(users.username, SEED_RECEPTION_USERNAME)).get();
+    if (!receptionUser) {
+      throw new Error("seed: missing reception user after insert");
+    }
 
     tx.insert(reservations)
       .values([
         {
-          roomTypeId: doubleId,
+          roomTypeId: doubleRow.id,
           roomId: null,
           status: "pending",
           checkInDate: "2026-09-01",
@@ -114,12 +124,12 @@ export async function seedPilotoDemoData(): Promise<void> {
           guestPhone: "+34600111222",
           notes: "Llegada tarde, seed demo.",
           cancelReason: null,
-          createdAt: NOW_ISO,
-          updatedAt: NOW_ISO,
+          createdAt: ts,
+          updatedAt: ts,
         },
         {
-          roomTypeId: singleId,
-          roomId: roomByCode("IND-101"),
+          roomTypeId: singleRow.id,
+          roomId: ind101.id,
           status: "confirmed",
           checkInDate: "2026-07-01",
           checkOutDate: "2026-07-05",
@@ -128,12 +138,12 @@ export async function seedPilotoDemoData(): Promise<void> {
           guestPhone: "+34600333444",
           notes: null,
           cancelReason: null,
-          createdAt: NOW_ISO,
-          updatedAt: NOW_ISO,
+          createdAt: ts,
+          updatedAt: ts,
         },
         {
-          roomTypeId: singleId,
-          roomId: roomByCode("IND-102"),
+          roomTypeId: singleRow.id,
+          roomId: ind102.id,
           status: "confirmed",
           checkInDate: "2026-07-10",
           checkOutDate: "2026-07-12",
@@ -142,11 +152,11 @@ export async function seedPilotoDemoData(): Promise<void> {
           guestPhone: "+34600555666",
           notes: null,
           cancelReason: null,
-          createdAt: NOW_ISO,
-          updatedAt: NOW_ISO,
+          createdAt: ts,
+          updatedAt: ts,
         },
         {
-          roomTypeId: suiteId,
+          roomTypeId: suiteRow.id,
           roomId: null,
           status: "cancelled",
           checkInDate: "2026-06-15",
@@ -156,22 +166,38 @@ export async function seedPilotoDemoData(): Promise<void> {
           guestPhone: "+34600777888",
           notes: "Suite vista jardín",
           cancelReason: "Cliente canceló con antelación (seed).",
-          createdAt: NOW_ISO,
-          updatedAt: NOW_ISO,
+          createdAt: ts,
+          updatedAt: ts,
         },
       ])
       .run();
+
+    const pending = tx.select().from(reservations).where(eq(reservations.guestEmail, "maria.perez@example.com")).get();
+    const confirmedA = tx.select().from(reservations).where(eq(reservations.guestEmail, "ana.ruiz@example.com")).get();
+    const confirmedB = tx.select().from(reservations).where(eq(reservations.guestEmail, "luis.gomez@example.com")).get();
+    const cancelled = tx.select().from(reservations).where(eq(reservations.guestEmail, "carla.vega@example.com")).get();
+    if (!pending || !confirmedA || !confirmedB || !cancelled) {
+      throw new Error("seed: missing reservations after insert");
+    }
+
+    return {
+      roomTypeIds: { single: singleRow.id, double: doubleRow.id, suite: suiteRow.id },
+      roomIds: {
+        ind101: ind101.id,
+        ind102: ind102.id,
+        dbl201: dbl201.id,
+        dbl202: dbl202.id,
+        ste301: ste301.id,
+      },
+      receptionUserId: receptionUser.id,
+      reservationIds: {
+        pending: pending.id,
+        confirmedA: confirmedA.id,
+        confirmedB: confirmedB.id,
+        cancelled: cancelled.id,
+      },
+    };
   });
 
-  const counts = {
-    roomTypes: Number(db.select({ c: sql`count(*)` }).from(roomTypes).get()?.c ?? 0),
-    rooms: Number(db.select({ c: sql`count(*)` }).from(rooms).get()?.c ?? 0),
-    users: Number(db.select({ c: sql`count(*)` }).from(users).get()?.c ?? 0),
-    reservations: Number(db.select({ c: sql`count(*)` }).from(reservations).get()?.c ?? 0),
-  };
-
-  console.log("Seed completed.", counts);
-  console.log(
-    `Recepción demo: usuario "${SEED_RECEPTION_USERNAME}" / contraseña "${SEED_RECEPTION_PASSWORD}" (solo pruebas).`,
-  );
+  return { ...inner, databasePath };
 }
