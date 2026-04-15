@@ -8,6 +8,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      '/health': {
+        target: apiTarget,
+        changeOrigin: true,
+      },
       '/api': {
         target: apiTarget,
         changeOrigin: true,

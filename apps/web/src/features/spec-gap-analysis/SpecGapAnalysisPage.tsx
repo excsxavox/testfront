@@ -7,7 +7,8 @@ type HealthState =
   | { status: 'success'; body: string }
   | { status: 'error'; message: string }
 
-const HEALTH_PATH = '/api/health'
+/** Alineado con `apps/api` scaffold (`GET /health`). */
+const HEALTH_PATH = '/health'
 
 function levelLabel(level: string): string {
   switch (level) {
@@ -71,9 +72,10 @@ export default function SpecGapAnalysisPage() {
       >
         <h2 id={statusId}>Comprobación del API (scaffold)</h2>
         <p className="panel__hint">
-          Petición a <code>{HEALTH_PATH}</code>. En desarrollo, Vite reenvía{' '}
-          <code>/api</code> al origen configurado en{' '}
-          <code>vite.config.ts</code>.
+          Petición a <code>{HEALTH_PATH}</code>. En desarrollo, Vite reenvía al
+          origen configurado en <code>vite.config.ts</code> (variable{' '}
+          <code>VITE_DEV_API_ORIGIN</code>, por defecto{' '}
+          <code>http://127.0.0.1:3000</code>).
         </p>
         {health.status === 'pending' ? (
           <p className="state state--muted" role="status">
