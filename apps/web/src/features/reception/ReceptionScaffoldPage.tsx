@@ -1,4 +1,5 @@
 import { ApiHealthPanel } from '@shared/ApiHealthPanel'
+import { HotelCalendarSpecPanel } from '@shared/HotelCalendarSpecPanel'
 import { PersistenceSummaryPanel } from '@shared/PersistenceSummaryPanel'
 
 export default function ReceptionScaffoldPage() {
@@ -14,6 +15,7 @@ export default function ReceptionScaffoldPage() {
           de recepción.
         </p>
       </header>
+      <HotelCalendarSpecPanel />
       <ApiHealthPanel description="Misma comprobación de red que en reserva pública: un único API en el monorepo." />
       <PersistenceSummaryPanel description="Confirma que existen tablas para usuarios de recepción y reservas antes de cablear login y mutaciones." />
     </div>
