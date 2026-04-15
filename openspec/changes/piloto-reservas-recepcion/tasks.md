@@ -6,7 +6,7 @@
 
 ## 1. Arranque técnico
 
-- [ ] 1.1 Elegir e inicializar stack (frontend + backend o full-stack) y dependencias; crear el **árbol de carpetas** descrito en `design.md` (sección *Clean Architecture — árbol de carpetas propuesto*)
+- [x] 1.1 Elegir e inicializar stack (frontend + backend o full-stack) y dependencias; crear el **árbol de carpetas** descrito en `design.md` (sección *Clean Architecture — árbol de carpetas propuesto*)
 - [ ] 1.2 Modelar persistencia (tipos de habitación, **habitaciones discretas** `Room`, reservas con asignación al confirmar, usuarios recepción, config timezone) según decisiones en `design.md`
 
 ## 2. Dominio público
