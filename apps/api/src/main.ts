@@ -1,4 +1,7 @@
 import { createHttpServer } from "./presentation/http-server.js";
+import { runMigrations } from "./infrastructure/persistence/run-migrations.js";
+
+runMigrations();
 
 const PORT = Number(process.env["PORT"] ?? 3000);
 const server = createHttpServer();
