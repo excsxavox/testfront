@@ -23,3 +23,5 @@ export type PilotoPersistenceSummary = {
 export type PilotoApiPersistenceSummaryResponse =
   | { ok: true; summary: PilotoPersistenceSummary }
   | { ok: false; error: string; message: string };
+
+export * from "./hotel-calendar.js";
