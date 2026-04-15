@@ -1,5 +1,9 @@
 # Tasks — Piloto reservas y recepción
 
+## 0. OpenSpec y contraste con specs
+
+- [x] Contraste requisitos vs escenarios y huecos (campos obligatorios, estados, errores): `gap-analysis.md`
+
 ## 1. Arranque técnico
 
 - [ ] 1.1 Elegir e inicializar stack (frontend + backend o full-stack) y dependencias; crear el **árbol de carpetas** descrito en `design.md` (sección *Clean Architecture — árbol de carpetas propuesto*)
