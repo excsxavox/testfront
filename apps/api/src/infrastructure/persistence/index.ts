@@ -1,4 +1,5 @@
 /**
- * Repositorios, migraciones y acceso a datos.
+ * Persistencia SQLite (Drizzle): esquema en `schema/`, migraciones en `drizzle/`.
  */
-export const INFRA_PERSISTENCE_SCAFFOLD = true;
+export * from "./db.js";
+export * from "./schema/index.js";

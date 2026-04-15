@@ -12,6 +12,7 @@ Este documento fija la **estructura de carpetas (Clean Architecture)** y los **c
 
 - Entidades sugeridas: **RoomType** (cupos fijos), **Reservation** (fechas, tipo, estado, datos de contacto, notas, motivo cancelación si aplica), **User** o equivalente para recepción.
 - Asignación: al confirmar, asociar una unidad lógica o slot por tipo de forma que no existan dos confirmadas solapadas en la misma unidad.
+- **Implementación (piloto):** SQLite vía **Drizzle ORM** en `apps/api/src/infrastructure/persistence/schema/`; migraciones versionadas en `apps/api/drizzle/`; fichero por defecto `apps/api/data/piloto.sqlite` (ignorado en git). Tablas: `room_types`, `rooms`, `reservations`, `users`, `hotel_settings` (columna `timezone_iana`, por defecto `Europe/Madrid` en esquema y constante `HOTEL_DEFAULT_TIMEZONE_IANA` en código).
 
 ### Decision: Zona horaria
 
