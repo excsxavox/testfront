@@ -2,7 +2,7 @@
 
 ## 0. OpenSpec y contraste con specs
 
-- [x] Contraste requisitos vs escenarios y huecos (campos obligatorios, estados, errores): `gap-analysis.md`
+- [x] 0.1 Contrastar requisitos globales y dominios (`core`, `public-booking`, `reception`, `inventory`) con escenarios; documentar huecos (campos obligatorios, estados, errores) en [`gap-analysis.md`](./gap-analysis.md)
 
 ## 1. Arranque técnico
 

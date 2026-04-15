@@ -68,4 +68,22 @@ Contraste entre el requerimiento global del piloto, los specs canónicos (`opens
 6. **Enum de estados** y nombres de `room_type` únicos en API y UI.
 7. **Historial en detalle** y campos post-confirmación (`room_id` / label) para satisfacer recepción + criterio E2E.
 
+## Anexo — matriz rápida C / P / H (resumen para UI)
+
+| Área | Nivel | Nota breve |
+|------|-------|------------|
+| Alcance exclusiones | C | Escenario explícito en core. |
+| TZ hotel | P | Formato API y default IANA. |
+| Email / teléfono | P | Reglas observables. |
+| README E2E | H* | *Hasta exista README raíz verificable. |
+| Disponibilidad + precio | P | Payload y política de precio (ítem 23). |
+| Fechas inválidas | C | Escenario en public-booking. |
+| Solicitud → pendiente | P | Shape request/response y nombre. |
+| POST sin cupo | H | Alinear inventory vs public-booking. |
+| Listados recepción | P | Paginación, orden, columnas. |
+| Auth denegada | P | 401/403 y cuerpo. |
+| Motivo confirm/cancel | P | Política ítem 22; confirm sin motivo en design. |
+| Detalle + historial | P | Eventos y `assigned_room`. |
+| Anti-solape + conflicto | C | inventory + design. |
+
 Este documento debe mantenerse alineado con `proposal.md` / `design.md`; cualquier decisión que cambie comportamiento observable debe reflejarse en delta bajo `openspec/changes/piloto-reservas-recepcion/specs/` antes de ampliar código.
