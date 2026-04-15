@@ -17,6 +17,14 @@ function defaultDatabaseUrl(): string {
 }
 
 /**
+ * Ruta del fichero SQLite activo (misma resolución que `createDbClient()`).
+ */
+export function resolveActiveSqliteFilePath(): string {
+  const databaseUrl = process.env["DATABASE_URL"] ?? defaultDatabaseUrl();
+  return resolveSqliteFilePath(databaseUrl);
+}
+
+/**
  * Resuelve la ruta del fichero SQLite desde `DATABASE_URL`:
  * - `file:/absolute/path` → absoluto
  * - cualquier otro `file:…` relativo → relativo a la raíz del paquete `apps/api` (no al CWD), para scripts desde el monorepo
