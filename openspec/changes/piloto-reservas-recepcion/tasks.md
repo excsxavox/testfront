@@ -28,5 +28,5 @@
 
 ## 5. Verificación y documentación
 
-- [ ] 5.1 Datos de ejemplo (seed o script)
+- [x] 5.1 Datos de ejemplo (seed o script) — `apps/api`: `npm run db:migrate` + `npm run db:seed` (`src/infrastructure/persistence/seed.ts`)
 - [ ] 5.2 README: pasos para flujo público → confirmar → ocupación visible
