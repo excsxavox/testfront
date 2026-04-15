@@ -10,4 +10,5 @@ export {
   SEED_RECEPTION_PASSWORD,
   SEED_RECEPTION_USERNAME,
   seedPilotoDemoData,
+  type SeedPilotoDemoResult,
 } from "./seed.js";
