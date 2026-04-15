@@ -1,3 +1,79 @@
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  padding: 0.45rem 0.65rem;
+  background: var(--btn-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  z-index: 10;
+  transform: translateY(-120%);
+  transition: transform 0.15s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.skip-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel-bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.app-topbar__inner {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0.65rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+}
+
+.app-topbar__brand {
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.app-topbar__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.app-topbar__link {
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+
+.app-topbar__link:hover {
+  background: var(--btn-bg-hover);
+}
+
+.app-topbar__link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.app-topbar__link.is-active {
+  font-weight: 600;
+  background: var(--panel-muted);
+  border: 1px solid var(--border);
+}
+
 .app-shell {
   min-height: 100svh;
   padding: 0;

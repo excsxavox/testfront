@@ -1,19 +1,27 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import type { PilotoApiHealthResponse } from "@piloto/shared-types";
+
+function sendJson(res: ServerResponse, statusCode: number, body: unknown): void {
+  res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
+  res.end(JSON.stringify(body));
+}
 
 function handleRequest(req: IncomingMessage, res: ServerResponse): void {
   if (req.url === "/health" && req.method === "GET") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ ok: true, service: "piloto-api" }));
+    const body: PilotoApiHealthResponse = { ok: true, service: "piloto-api" };
+    sendJson(res, 200, body);
     return;
   }
 
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ error: "not_found", message: "Ruta no implementada" }));
+  sendJson(res, 404, {
+    error: "not_found",
+    message: "Ruta no implementada",
+  });
 }
 
 /**
  * Adaptador HTTP de entrada; los routers `/api/public/*` y `/api/reception/*` se montarán aquí.
  */
-export function createHttpServer() {
+export function createHttpServer(): Server {
   return createServer(handleRequest);
 }
