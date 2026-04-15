@@ -1,10 +1,6 @@
 import { useCallback, useId, useMemo, useState } from 'react'
 import type { PilotoApiPersistenceSummaryResponse } from '@piloto/shared-types'
-import {
-  hotelStayHalfOpenIntervalsOverlap,
-  isValidIanaTimeZoneId,
-  validateStayHalfOpenInterval,
-} from '@piloto/shared-types'
+import { hotelStayHalfOpenIntervalsOverlap, isValidIanaTimeZoneId, validateStayHalfOpenInterval } from '@piloto/shared-types'
 
 const SUMMARY_PATH = '/api/internal/persistence-summary'
 
@@ -14,19 +10,19 @@ type SummaryState =
   | { status: 'success'; data: PilotoApiPersistenceSummaryResponse }
   | { status: 'error'; message: string }
 
-/** Mensaje UX para códigos de dominio compartidos api ↔ web. */
-function intervalErrorMessage(code: string): string {
-  switch (code) {
-    case 'INVALID_TIMEZONE':
+/** Mensaje UX para errores de dominio compartidos api ↔ web. */
+function intervalErrorMessage(error: string): string {
+  switch (error) {
+    case 'invalid_timezone':
       return 'La zona horaria IANA no es reconocida por el motor (valor de hotel_settings o campo manual).'
-    case 'INVALID_DATE_FORMAT':
-      return 'Las fechas deben tener formato YYYY-MM-DD.'
-    case 'INVALID_CALENDAR_DATE':
-      return 'La fecha no existe en el calendario (ej.: mes/día inválidos).'
-    case 'CHECK_OUT_NOT_AFTER_CHECK_IN':
+    case 'invalid_check_in_date':
+      return 'La fecha de entrada no es un día válido en formato YYYY-MM-DD.'
+    case 'invalid_check_out_date':
+      return 'La fecha de salida no es un día válido en formato YYYY-MM-DD.'
+    case 'check_out_not_after_check_in':
       return 'La salida debe ser estrictamente posterior a la entrada (intervalo [entrada, salida)).'
     default:
-      return `Error de calendario: ${code}`
+      return `Error de calendario: ${error}`
   }
 }
 
@@ -72,8 +68,7 @@ export function HotelCalendarSpecPanel() {
 
   const effectiveTimezone = manualTz.trim() || hotelTzFromApi
 
-  const manualTzInvalid =
-    manualTz.trim().length > 0 && !isValidIanaTimeZoneId(manualTz.trim())
+  const manualTzInvalid = manualTz.trim().length > 0 && !isValidIanaTimeZoneId(manualTz.trim())
 
   const mainStay = useMemo(() => {
     if (!effectiveTimezone) {
@@ -86,24 +81,42 @@ export function HotelCalendarSpecPanel() {
     if (!checkIn && !checkOut) {
       return { stage: 'empty' as const }
     }
-    const v = validateStayHalfOpenInterval(effectiveTimezone, checkIn, checkOut)
+    const v = validateStayHalfOpenInterval({
+      hotelTimezoneIana: effectiveTimezone,
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+    })
     if (!v.ok) {
-      return { stage: 'invalid' as const, code: v.code }
+      return { stage: 'invalid' as const, error: v.error }
     }
     return { stage: 'ok' as const }
   }, [checkIn, checkOut, effectiveTimezone])
 
   const overlapDemo = useMemo(() => {
     if (!effectiveTimezone) return { stage: 'needs_tz' as const }
-    const primary = { checkIn, checkOut }
-    const other = { checkIn: otherIn, checkOut: otherOut }
     const hasAny = checkIn || checkOut || otherIn || otherOut
     if (!hasAny) return { stage: 'empty' as const }
-    const r = hotelStayHalfOpenIntervalsOverlap(effectiveTimezone, primary, other)
-    if (!r.ok) {
-      return { stage: 'invalid' as const, code: r.code, detail: r.message }
+
+    const primary = validateStayHalfOpenInterval({
+      hotelTimezoneIana: effectiveTimezone,
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+    })
+    if (!primary.ok) {
+      return { stage: 'invalid' as const, label: 'Intervalo principal', error: primary.error }
     }
-    return { stage: 'ok' as const, overlap: r.overlap }
+
+    const other = validateStayHalfOpenInterval({
+      hotelTimezoneIana: effectiveTimezone,
+      checkInDate: otherIn,
+      checkOutDate: otherOut,
+    })
+    if (!other.ok) {
+      return { stage: 'invalid' as const, label: 'Segundo intervalo', error: other.error }
+    }
+
+    const overlap = hotelStayHalfOpenIntervalsOverlap(checkIn, checkOut, otherIn, otherOut)
+    return { stage: 'ok' as const, overlap }
   }, [checkIn, checkOut, effectiveTimezone, otherIn, otherOut])
 
   return (
@@ -111,9 +124,9 @@ export function HotelCalendarSpecPanel() {
       <h2 id={demoHeadingId}>Calendario del hotel (contrato de fechas)</h2>
       <p className="panel__hint">
         Las fechas de estancia se envían y persisten como <code>YYYY-MM-DD</code>; la semántica de
-        ocupación y solapes es <strong>medio abierta</strong> <code>[entrada, salida)</code>, usando la
-        misma zona IANA que <code>hotel_settings.timezone_iana</code>. Esta vista replica las reglas
-        en el cliente para feedback inmediato; la API seguirá siendo la fuente de verdad.
+        ocupación y solapes es <strong>medio abierta</strong> <code>[entrada, salida)</code>, validada
+        con la misma lógica que el dominio del API vía <code>@piloto/shared-types</code>. La zona IANA
+        efectiva debe coincidir con <code>hotel_settings.timezone_iana</code>.
       </p>
 
       <section
@@ -214,7 +227,7 @@ export function HotelCalendarSpecPanel() {
         ) : null}
         {mainStay.stage === 'invalid' ? (
           <p className="state state--err" role="alert">
-            {intervalErrorMessage(mainStay.code)}
+            {intervalErrorMessage(mainStay.error)}
           </p>
         ) : null}
         {mainStay.stage === 'ok' ? (
@@ -264,7 +277,7 @@ export function HotelCalendarSpecPanel() {
         ) : null}
         {overlapDemo.stage === 'invalid' ? (
           <p className="state state--err" role="alert">
-            {overlapDemo.detail}: {intervalErrorMessage(overlapDemo.code)}
+            {overlapDemo.label}: {intervalErrorMessage(overlapDemo.error)}
           </p>
         ) : null}
         {overlapDemo.stage === 'ok' ? (
