@@ -17,6 +17,7 @@ Este documento fija la **estructura de carpetas (Clean Architecture)** y los **c
 ### Decision: Zona horaria
 
 - Almacenar fechas en UTC o fecha-local explícita con `timezone` configurable a nivel establecimiento (una fila de configuración o env).
+- **Implementación (piloto):** validación de intervalo y detección de solapes entre estancias persistidas como `YYYY-MM-DD` centralizadas en `apps/api/src/domain/shared/hotel-calendar.ts`, usando siempre el mismo `timezone_iana` que `hotel_settings` (comprobación de IANA vía `Intl`; comparaciones de fechas en calendario civil del hotel, no instantes del cliente).
 
 ### Decision: Autenticación recepción
 

@@ -8,6 +8,7 @@
 
 - [x] 1.1 Elegir e inicializar stack (frontend + backend o full-stack) y dependencias; crear el **árbol de carpetas** descrito en `design.md` (sección *Clean Architecture — árbol de carpetas propuesto*)
 - [x] 1.2 Modelar persistencia (tipos de habitación, **habitaciones discretas** `Room`, reservas con asignación al confirmar, usuarios recepción, config timezone) según decisiones en `design.md`
+- [x] 1.3 Dominio: utilidades de calendario hotel (`YYYY-MM-DD`, intervalo `[check_in, check_out)`, solapes) alineadas a `hotel_settings.timezone_iana` (`apps/api/src/domain/shared/hotel-calendar.ts`, tests `apps/api/tests/hotel-calendar.test.ts`)
 
 ## 2. Dominio público
 
