@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 
+import { DemoDataGuidePanel } from '@shared/DemoDataGuidePanel'
+
 const SpecGapAnalysisPage = lazy(() => import('../features/spec-gap-analysis/SpecGapAnalysisPage'))
 const PublicBookingScaffoldPage = lazy(() => import('../features/public-booking/PublicBookingScaffoldPage'))
 const ReceptionScaffoldPage = lazy(() => import('../features/reception/ReceptionScaffoldPage'))
@@ -58,6 +60,7 @@ export default function AppShell() {
                 </li>
               </ul>
             </nav>
+            <DemoDataGuidePanel />
           </div>
         )
     }
