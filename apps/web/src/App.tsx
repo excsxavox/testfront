@@ -1,10 +1,6 @@
-import SpecGapAnalysisPage from './features/spec-gap-analysis/SpecGapAnalysisPage'
+import AppShell from '@app/AppShell'
 import './App.css'
 
 export default function App() {
-  return (
-    <main className="app-shell">
-      <SpecGapAnalysisPage />
-    </main>
-  )
+  return <AppShell />
 }
