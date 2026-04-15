@@ -1,4 +1,12 @@
 /**
  * Resultados de dominio, errores tipados compartidos entre contextos.
  */
-export const DOMAIN_SHARED_SCAFFOLD = true;
+export {
+  compareHotelLocalDates,
+  hotelStayHalfOpenIntervalsOverlap,
+  isValidIanaTimeZoneId,
+  parseHotelLocalCalendarDate,
+  validateStayHalfOpenInterval,
+  type HotelLocalDateString,
+  type StayIntervalValidationError,
+} from "./hotel-calendar.js";

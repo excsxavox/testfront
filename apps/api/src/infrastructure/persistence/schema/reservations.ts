@@ -8,6 +8,10 @@ export type ReservationStatus = (typeof reservationStatuses)[number];
 /**
  * Fechas de estancia como calendario del hotel: TEXT `YYYY-MM-DD` interpretadas siempre con la TZ IANA en `hotel_settings`.
  * Intervalo semántico de ocupación asignada: [check_in_date, check_out_date) (la noche de salida no cuenta como ocupada).
+ *
+ * Reglas de intervalo y solape (incl. solo confirmadas como bloqueo de inventario) SHALL usar
+ * `validateStayHalfOpenInterval` y `hotelStayHalfOpenIntervalsOverlap` en `domain/shared/hotel-calendar.ts`
+ * con el mismo `hotel_settings.timezone_iana` que la fila de configuración del piloto.
  */
 export const reservations = sqliteTable(
   "reservations",
