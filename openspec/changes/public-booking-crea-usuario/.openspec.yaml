@@ -1,0 +1,5 @@
+id: public-booking-crea-usuario
+title: Usuario huésped al reservar (canal público)
+status: draft
+relates_to:
+  - piloto-reservas-recepcion
