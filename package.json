@@ -1,0 +1,16 @@
+{
+  "name": "piloto-reservas-recepcion",
+  "private": true,
+  "description": "Monorepo piloto: reservas públicas + recepción (OpenSpec en openspec/)",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "postinstall": "npm run build -w @piloto/shared-types",
+    "build": "npm run build -w @piloto/shared-types && npm run build -w @piloto/api && npm run build -w @piloto/web",
+    "dev:api": "npm run dev -w @piloto/api",
+    "dev:web": "npm run dev -w @piloto/web",
+    "lint:web": "npm run lint -w @piloto/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
