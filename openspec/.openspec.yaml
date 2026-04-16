@@ -1,0 +1,8 @@
+# Metadatos del árbol OpenSpec en este repositorio (convención local).
+# Specs canónicos: specs/
+# Propuestas activas: changes/
+# Conceptos upstream: https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md
+project: piloto-hotel-web
+default_language: es
+specs_root: specs
+changes_root: changes

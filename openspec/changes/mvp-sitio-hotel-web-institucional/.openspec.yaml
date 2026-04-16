@@ -1,0 +1,7 @@
+id: mvp-sitio-hotel-web-institucional
+title: Sitio público hotelero (contenido + motor reservas MVP)
+status: draft
+created: 2026-04-16
+relates_to:
+  - piloto-reservas-recepcion
+  - public-booking-crea-usuario
